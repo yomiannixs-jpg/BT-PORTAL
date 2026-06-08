@@ -1,8 +1,9 @@
-import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
+import { Switch, Route, Router as WouterRouter, Redirect, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { StudentProvider } from "@/lib/student-context";
+import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { Layout } from "@/components/layout";
 import Onboarding from "@/pages/onboarding";
 import Dashboard from "@/pages/dashboard";
@@ -13,6 +14,9 @@ import Grades from "@/pages/grades";
 import Announcements from "@/pages/announcements";
 import Profile from "@/pages/profile";
 import Admin from "@/pages/admin";
+import Login from "@/pages/login";
+import Transcript from "@/pages/transcript";
+import Messages from "@/pages/messages";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,36 +37,98 @@ function NotFound() {
   );
 }
 
+function AuthGuard({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuth();
+  const [location] = useLocation();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Redirect to="/login" />;
+  }
+
+  return <>{children}</>;
+}
+
+function AdminGuard({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  if (user?.role !== "admin") {
+    return <Redirect to="/dashboard" />;
+  }
+  return <>{children}</>;
+}
+
 function AppRoutes() {
+  const { user } = useAuth();
+
   return (
     <Switch>
+      <Route path="/login" component={Login} />
+      <Route path="/onboarding">
+        <AuthGuard>
+          <Onboarding />
+        </AuthGuard>
+      </Route>
       <Route path="/">
         <Redirect to="/dashboard" />
       </Route>
-      <Route path="/onboarding" component={Onboarding} />
       <Route path="/dashboard">
-        <Layout><Dashboard /></Layout>
+        <AuthGuard>
+          <Layout><Dashboard /></Layout>
+        </AuthGuard>
       </Route>
       <Route path="/courses/:id">
-        <Layout><CourseDetail /></Layout>
+        <AuthGuard>
+          <Layout><CourseDetail /></Layout>
+        </AuthGuard>
       </Route>
       <Route path="/courses">
-        <Layout><Courses /></Layout>
+        <AuthGuard>
+          <Layout><Courses /></Layout>
+        </AuthGuard>
       </Route>
       <Route path="/assignments">
-        <Layout><Assignments /></Layout>
+        <AuthGuard>
+          <Layout><Assignments /></Layout>
+        </AuthGuard>
       </Route>
       <Route path="/grades">
-        <Layout><Grades /></Layout>
+        <AuthGuard>
+          <Layout><Grades /></Layout>
+        </AuthGuard>
+      </Route>
+      <Route path="/transcript">
+        <AuthGuard>
+          <Layout><Transcript /></Layout>
+        </AuthGuard>
+      </Route>
+      <Route path="/messages">
+        <AuthGuard>
+          <Layout><Messages /></Layout>
+        </AuthGuard>
       </Route>
       <Route path="/announcements">
-        <Layout><Announcements /></Layout>
+        <AuthGuard>
+          <Layout><Announcements /></Layout>
+        </AuthGuard>
       </Route>
       <Route path="/profile">
-        <Layout><Profile /></Layout>
+        <AuthGuard>
+          <Layout><Profile /></Layout>
+        </AuthGuard>
       </Route>
       <Route path="/admin">
-        <Layout><Admin /></Layout>
+        <AuthGuard>
+          <AdminGuard>
+            <Layout><Admin /></Layout>
+          </AdminGuard>
+        </AuthGuard>
       </Route>
       <Route>
         <Layout><NotFound /></Layout>
@@ -75,11 +141,13 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <StudentProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <AppRoutes />
-          </WouterRouter>
-        </StudentProvider>
+        <AuthProvider>
+          <StudentProvider>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+              <AppRoutes />
+            </WouterRouter>
+          </StudentProvider>
+        </AuthProvider>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

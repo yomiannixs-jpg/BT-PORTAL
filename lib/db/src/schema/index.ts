@@ -6,3 +6,6 @@ export * from "./assignments";
 export * from "./submissions";
 export * from "./grades";
 export * from "./announcements";
+export * from "./users";
+export * from "./transcript-requests";
+export * from "./messages";
