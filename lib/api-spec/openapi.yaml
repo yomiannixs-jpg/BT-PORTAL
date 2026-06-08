@@ -1,22 +1,35 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Academic Student Portal API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: students
+    description: Student registration and profile
+  - name: programs
+    description: Academic programs
+  - name: courses
+    description: Courses and enrollment
+  - name: assignments
+    description: Assignments and submissions
+  - name: grades
+    description: Student grades
+  - name: announcements
+    description: Announcements
+  - name: dashboard
+    description: Dashboard stats and activity
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +37,849 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # --- Students ---
+  /students:
+    get:
+      operationId: listStudents
+      tags: [students]
+      summary: List all students (admin)
+      responses:
+        "200":
+          description: List of students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Student"
+    post:
+      operationId: registerStudent
+      tags: [students]
+      summary: Register / onboard a new student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudentInput"
+      responses:
+        "201":
+          description: Student registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+
+  /students/{id}:
+    get:
+      operationId: getStudent
+      tags: [students]
+      summary: Get student by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Student record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+    patch:
+      operationId: updateStudent
+      tags: [students]
+      summary: Update student profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudentUpdate"
+      responses:
+        "200":
+          description: Updated student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+
+  /students/{id}/status:
+    patch:
+      operationId: updateStudentStatus
+      tags: [students]
+      summary: Update student enrollment status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudentStatusUpdate"
+      responses:
+        "200":
+          description: Updated status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+
+  # --- Programs ---
+  /programs:
+    get:
+      operationId: listPrograms
+      tags: [programs]
+      summary: List academic programs
+      responses:
+        "200":
+          description: List of programs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Program"
+
+  /programs/{id}:
+    get:
+      operationId: getProgram
+      tags: [programs]
+      summary: Get program details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Program details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Program"
+
+  # --- Courses ---
+  /courses:
+    get:
+      operationId: listCourses
+      tags: [courses]
+      summary: List all courses
+      responses:
+        "200":
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Course"
+    post:
+      operationId: createCourse
+      tags: [courses]
+      summary: Create a course (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourseInput"
+      responses:
+        "201":
+          description: Created course
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+
+  /courses/{id}:
+    get:
+      operationId: getCourse
+      tags: [courses]
+      summary: Get course details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Course details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+
+  /courses/{id}/enroll:
+    post:
+      operationId: enrollInCourse
+      tags: [courses]
+      summary: Enroll a student in a course
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnrollmentInput"
+      responses:
+        "201":
+          description: Enrollment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Enrollment"
+
+  /students/{id}/enrollments:
+    get:
+      operationId: getStudentEnrollments
+      tags: [courses]
+      summary: Get all course enrollments for a student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of enrollments with courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Enrollment"
+
+  # --- Assignments ---
+  /courses/{id}/assignments:
+    get:
+      operationId: listAssignments
+      tags: [assignments]
+      summary: List assignments for a course
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Assignments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Assignment"
+    post:
+      operationId: createAssignment
+      tags: [assignments]
+      summary: Create an assignment (admin/instructor)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignmentInput"
+      responses:
+        "201":
+          description: Created assignment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assignment"
+
+  /assignments/{id}:
+    get:
+      operationId: getAssignment
+      tags: [assignments]
+      summary: Get assignment details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Assignment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assignment"
+
+  /students/{id}/assignments:
+    get:
+      operationId: getStudentAssignments
+      tags: [assignments]
+      summary: Get all assignments across enrolled courses for a student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Assignments with submission status
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AssignmentWithStatus"
+
+  /assignments/{id}/submit:
+    post:
+      operationId: submitAssignment
+      tags: [assignments]
+      summary: Submit an assignment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmissionInput"
+      responses:
+        "201":
+          description: Submission recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Submission"
+
+  # --- Grades ---
+  /students/{id}/grades:
+    get:
+      operationId: getStudentGrades
+      tags: [grades]
+      summary: Get grades for a student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Grade records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Grade"
+
+  /submissions/{id}/grade:
+    patch:
+      operationId: gradeSubmission
+      tags: [grades]
+      summary: Grade a submitted assignment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GradeInput"
+      responses:
+        "200":
+          description: Updated grade
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Grade"
+
+  # --- Announcements ---
+  /announcements:
+    get:
+      operationId: listAnnouncements
+      tags: [announcements]
+      summary: List announcements
+      responses:
+        "200":
+          description: Announcements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Announcement"
+    post:
+      operationId: createAnnouncement
+      tags: [announcements]
+      summary: Post an announcement (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnnouncementInput"
+      responses:
+        "201":
+          description: Announcement created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Announcement"
+
+  # --- Dashboard ---
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Aggregate stats for the admin dashboard
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/student/{id}:
+    get:
+      operationId: getStudentDashboard
+      tags: [dashboard]
+      summary: Personal dashboard summary for a student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Student dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentDashboard"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    # --- Student ---
+    Student:
+      type: object
+      required: [id, firstName, lastName, email, status, createdAt]
+      properties:
+        id:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: ["string", "null"]
+        country:
+          type: ["string", "null"]
+        programId:
+          type: ["integer", "null"]
+        programName:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [pending, active, graduated, withdrawn]
+        bio:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    StudentInput:
+      type: object
+      required: [firstName, lastName, email]
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        country:
+          type: string
+        programId:
+          type: integer
+        bio:
+          type: string
+
+    StudentUpdate:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        country:
+          type: string
+        programId:
+          type: integer
+        bio:
+          type: string
+
+    StudentStatusUpdate:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [pending, active, graduated, withdrawn]
+
+    # --- Program ---
+    Program:
+      type: object
+      required: [id, name, description, level, durationMonths]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        level:
+          type: string
+          enum: [certificate, masters, phd_prep]
+        durationMonths:
+          type: integer
+        courseCount:
+          type: integer
+
+    # --- Course ---
+    Course:
+      type: object
+      required: [id, title, code, programId, instructorName, status]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        code:
+          type: string
+        description:
+          type: ["string", "null"]
+        programId:
+          type: integer
+        programName:
+          type: ["string", "null"]
+        instructorName:
+          type: string
+        credits:
+          type: integer
+        status:
+          type: string
+          enum: [active, upcoming, completed]
+        enrollmentCount:
+          type: integer
+
+    CourseInput:
+      type: object
+      required: [title, code, programId, instructorName]
+      properties:
+        title:
+          type: string
+        code:
+          type: string
+        description:
+          type: string
+        programId:
+          type: integer
+        instructorName:
+          type: string
+        credits:
+          type: integer
+        status:
+          type: string
+          enum: [active, upcoming, completed]
+
+    # --- Enrollment ---
+    Enrollment:
+      type: object
+      required: [id, studentId, courseId, enrolledAt]
+      properties:
+        id:
+          type: integer
+        studentId:
+          type: integer
+        courseId:
+          type: integer
+        courseTitle:
+          type: ["string", "null"]
+        courseCode:
+          type: ["string", "null"]
+        instructorName:
+          type: ["string", "null"]
+        credits:
+          type: ["integer", "null"]
+        enrolledAt:
+          type: string
+
+    EnrollmentInput:
+      type: object
+      required: [studentId]
+      properties:
+        studentId:
+          type: integer
+
+    # --- Assignment ---
+    Assignment:
+      type: object
+      required: [id, courseId, title, dueDate, maxScore]
+      properties:
+        id:
+          type: integer
+        courseId:
+          type: integer
+        courseTitle:
+          type: ["string", "null"]
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        dueDate:
+          type: string
+        maxScore:
+          type: integer
+
+    AssignmentInput:
+      type: object
+      required: [title, dueDate, maxScore]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        dueDate:
+          type: string
+        maxScore:
+          type: integer
+
+    AssignmentWithStatus:
+      type: object
+      required: [id, courseId, title, dueDate, maxScore, submitted]
+      properties:
+        id:
+          type: integer
+        courseId:
+          type: integer
+        courseTitle:
+          type: ["string", "null"]
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        dueDate:
+          type: string
+        maxScore:
+          type: integer
+        submitted:
+          type: boolean
+        submissionId:
+          type: ["integer", "null"]
+        score:
+          type: ["integer", "null"]
+        grade:
+          type: ["string", "null"]
+
+    # --- Submission ---
+    Submission:
+      type: object
+      required: [id, assignmentId, studentId, submittedAt]
+      properties:
+        id:
+          type: integer
+        assignmentId:
+          type: integer
+        studentId:
+          type: integer
+        content:
+          type: ["string", "null"]
+        submittedAt:
+          type: string
+
+    SubmissionInput:
+      type: object
+      required: [studentId]
+      properties:
+        studentId:
+          type: integer
+        content:
+          type: string
+
+    # --- Grade ---
+    Grade:
+      type: object
+      required: [id, submissionId, score, letterGrade, gradedAt]
+      properties:
+        id:
+          type: integer
+        submissionId:
+          type: integer
+        assignmentId:
+          type: integer
+        assignmentTitle:
+          type: ["string", "null"]
+        courseTitle:
+          type: ["string", "null"]
+        score:
+          type: integer
+        maxScore:
+          type: integer
+        letterGrade:
+          type: string
+        feedback:
+          type: ["string", "null"]
+        gradedAt:
+          type: string
+
+    GradeInput:
+      type: object
+      required: [score, letterGrade]
+      properties:
+        score:
+          type: integer
+        letterGrade:
+          type: string
+        feedback:
+          type: string
+
+    # --- Announcement ---
+    Announcement:
+      type: object
+      required: [id, title, content, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        priority:
+          type: string
+          enum: [normal, important, urgent]
+        createdAt:
+          type: string
+
+    AnnouncementInput:
+      type: object
+      required: [title, content]
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        priority:
+          type: string
+          enum: [normal, important, urgent]
+
+    # --- Dashboard ---
+    DashboardStats:
+      type: object
+      required: [totalStudents, activeStudents, totalCourses, totalPrograms, pendingSubmissions, recentEnrollments]
+      properties:
+        totalStudents:
+          type: integer
+        activeStudents:
+          type: integer
+        totalCourses:
+          type: integer
+        totalPrograms:
+          type: integer
+        pendingSubmissions:
+          type: integer
+        recentEnrollments:
+          type: integer
+        studentsByStatus:
+          type: array
+          items:
+            $ref: "#/components/schemas/StatusCount"
+        enrollmentsByProgram:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProgramCount"
+
+    StudentDashboard:
+      type: object
+      required: [student, enrolledCourses, upcomingAssignments, recentGrades, gpa]
+      properties:
+        student:
+          $ref: "#/components/schemas/Student"
+        enrolledCourses:
+          type: integer
+        upcomingAssignments:
+          type: integer
+        completedAssignments:
+          type: integer
+        recentGrades:
+          type: array
+          items:
+            $ref: "#/components/schemas/Grade"
+        gpa:
+          type: ["number", "null"]
+
+    StatusCount:
+      type: object
+      required: [status, count]
+      properties:
+        status:
+          type: string
+        count:
+          type: integer
+
+    ProgramCount:
+      type: object
+      required: [program, count]
+      properties:
+        program:
+          type: string
+        count:
+          type: integer
