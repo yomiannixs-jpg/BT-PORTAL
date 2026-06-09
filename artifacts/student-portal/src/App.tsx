@@ -1,4 +1,4 @@
-import { Switch, Route, Router as WouterRouter, Redirect, useLocation } from "wouter";
+import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,6 +17,7 @@ import Admin from "@/pages/admin";
 import Login from "@/pages/login";
 import Transcript from "@/pages/transcript";
 import Messages from "@/pages/messages";
+import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,30 +28,38 @@ const queryClient = new QueryClient({
   },
 });
 
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+
 function NotFound() {
   return (
     <div className="flex flex-col items-center justify-center h-64 gap-4 text-center">
       <div className="text-6xl font-bold text-muted-foreground/30">404</div>
       <p className="text-foreground font-semibold">Page not found</p>
-      <a href="/dashboard" className="text-sm text-accent hover:underline">Back to Dashboard</a>
+      <button
+        onClick={() => { window.location.href = `${BASE}/dashboard`; }}
+        className="text-sm text-accent hover:underline"
+      >
+        Back to Dashboard
+      </button>
     </div>
   );
 }
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
-  const [location] = useLocation();
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+        <Loader2 className="w-8 h-8 text-accent animate-spin" />
       </div>
     );
   }
 
   if (!user) {
-    return <Redirect to="/login" />;
+    // Use window.location to avoid any Wouter redirect quirks
+    window.location.href = `${BASE}/login`;
+    return null;
   }
 
   return <>{children}</>;
@@ -59,69 +68,51 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 function AdminGuard({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   if (user?.role !== "admin") {
-    return <Redirect to="/dashboard" />;
+    window.location.href = `${BASE}/dashboard`;
+    return null;
   }
   return <>{children}</>;
 }
 
 function AppRoutes() {
-  const { user } = useAuth();
-
   return (
     <Switch>
+      {/* Public routes — no auth required */}
       <Route path="/login" component={Login} />
-      <Route path="/onboarding">
-        <AuthGuard>
-          <Onboarding />
-        </AuthGuard>
-      </Route>
+      <Route path="/onboarding" component={Onboarding} />
+
+      {/* Root → dashboard */}
       <Route path="/">
         <Redirect to="/dashboard" />
       </Route>
+
+      {/* Protected routes */}
       <Route path="/dashboard">
-        <AuthGuard>
-          <Layout><Dashboard /></Layout>
-        </AuthGuard>
+        <AuthGuard><Layout><Dashboard /></Layout></AuthGuard>
       </Route>
       <Route path="/courses/:id">
-        <AuthGuard>
-          <Layout><CourseDetail /></Layout>
-        </AuthGuard>
+        <AuthGuard><Layout><CourseDetail /></Layout></AuthGuard>
       </Route>
       <Route path="/courses">
-        <AuthGuard>
-          <Layout><Courses /></Layout>
-        </AuthGuard>
+        <AuthGuard><Layout><Courses /></Layout></AuthGuard>
       </Route>
       <Route path="/assignments">
-        <AuthGuard>
-          <Layout><Assignments /></Layout>
-        </AuthGuard>
+        <AuthGuard><Layout><Assignments /></Layout></AuthGuard>
       </Route>
       <Route path="/grades">
-        <AuthGuard>
-          <Layout><Grades /></Layout>
-        </AuthGuard>
+        <AuthGuard><Layout><Grades /></Layout></AuthGuard>
       </Route>
       <Route path="/transcript">
-        <AuthGuard>
-          <Layout><Transcript /></Layout>
-        </AuthGuard>
+        <AuthGuard><Layout><Transcript /></Layout></AuthGuard>
       </Route>
       <Route path="/messages">
-        <AuthGuard>
-          <Layout><Messages /></Layout>
-        </AuthGuard>
+        <AuthGuard><Layout><Messages /></Layout></AuthGuard>
       </Route>
       <Route path="/announcements">
-        <AuthGuard>
-          <Layout><Announcements /></Layout>
-        </AuthGuard>
+        <AuthGuard><Layout><Announcements /></Layout></AuthGuard>
       </Route>
       <Route path="/profile">
-        <AuthGuard>
-          <Layout><Profile /></Layout>
-        </AuthGuard>
+        <AuthGuard><Layout><Profile /></Layout></AuthGuard>
       </Route>
       <Route path="/admin">
         <AuthGuard>
@@ -130,6 +121,7 @@ function AppRoutes() {
           </AdminGuard>
         </AuthGuard>
       </Route>
+
       <Route>
         <Layout><NotFound /></Layout>
       </Route>

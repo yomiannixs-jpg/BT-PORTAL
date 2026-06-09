@@ -1,13 +1,24 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
-import { GraduationCap, Eye, EyeOff, Shield, User } from "lucide-react";
+import { useState, useEffect } from "react";
+import { GraduationCap, Eye, EyeOff, Shield, User, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 
 type Tab = "student" | "admin";
 
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+const demoCredentials = {
+  student: [
+    { label: "Amara Mensah", email: "amara.mensah@example.com", password: "student1" },
+    { label: "Fatima Ibrahim", email: "fatima.ibrahim@example.com", password: "student2" },
+    { label: "Khoury Benaissa", email: "khoury.benaissa@example.com", password: "student3" },
+  ],
+  admin: [
+    { label: "Portal Admin", email: "admin@baumtenpers.com", password: "admin123" },
+  ],
+};
+
 export default function Login() {
-  const [, navigate] = useLocation();
-  const { login } = useAuth();
+  const { login, user, isLoading } = useAuth();
   const [tab, setTab] = useState<Tab>("student");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,20 +26,33 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const demoCredentials = {
-    student: [
-      { label: "Amara Mensah", email: "amara.mensah@example.com", password: "student1" },
-      { label: "Fatima Ibrahim", email: "fatima.ibrahim@example.com", password: "student2" },
-    ],
-    admin: [
-      { label: "Portal Admin", email: "admin@baumtenpers.com", password: "admin123" },
-    ],
+  // If already logged in, redirect straight to dashboard
+  useEffect(() => {
+    if (!isLoading && user) {
+      window.location.href = `${BASE}/dashboard`;
+    }
+  }, [user, isLoading]);
+
+  const goToDashboard = () => {
+    window.location.href = `${BASE}/dashboard`;
   };
 
-  const fillDemo = (cred: { email: string; password: string }) => {
+  const goToOnboarding = () => {
+    window.location.href = `${BASE}/onboarding`;
+  };
+
+  const fillAndSubmit = async (cred: { email: string; password: string }) => {
     setEmail(cred.email);
     setPassword(cred.password);
     setError("");
+    setLoading(true);
+    const result = await login(cred.email, cred.password);
+    setLoading(false);
+    if (result.success) {
+      window.location.href = `${BASE}/dashboard`;
+    } else {
+      setError(result.error ?? "Login failed");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,11 +62,35 @@ export default function Login() {
     const result = await login(email, password);
     setLoading(false);
     if (result.success) {
-      navigate("/dashboard");
+      window.location.href = `${BASE}/dashboard`;
     } else {
       setError(result.error ?? "Login failed");
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-sidebar via-[hsl(222,47%,16%)] to-[hsl(222,47%,20%)] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-accent animate-spin" />
+      </div>
+    );
+  }
+
+  if (user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-sidebar via-[hsl(222,47%,16%)] to-[hsl(222,47%,20%)] flex items-center justify-center">
+        <div className="text-center text-white space-y-4">
+          <p className="text-lg font-semibold">Welcome back, {user.name.split(" ")[0]}!</p>
+          <button
+            onClick={goToDashboard}
+            className="flex items-center gap-2 px-6 py-3 bg-accent text-accent-foreground rounded-xl font-bold hover:opacity-90 transition-opacity mx-auto"
+          >
+            Go to Dashboard <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sidebar via-[hsl(222,47%,16%)] to-[hsl(222,47%,20%)] flex items-center justify-center p-4">
@@ -82,20 +130,33 @@ export default function Login() {
           </div>
 
           <div className="p-8">
-            {/* Demo credentials */}
-            <div className="mb-6">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Quick demo access:</p>
-              <div className="flex flex-wrap gap-2">
+            {/* One-click demo access */}
+            <div className="mb-6 p-4 bg-muted/40 rounded-xl border border-border">
+              <p className="text-xs font-bold text-foreground/70 uppercase tracking-wide mb-3">
+                ⚡ One-click demo access
+              </p>
+              <div className="flex flex-col gap-2">
                 {demoCredentials[tab].map(cred => (
                   <button
                     key={cred.email}
-                    onClick={() => fillDemo(cred)}
-                    className="text-xs px-3 py-1.5 rounded-lg bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground border border-border transition-colors"
+                    onClick={() => fillAndSubmit(cred)}
+                    disabled={loading}
+                    className="flex items-center justify-between w-full px-4 py-2.5 rounded-lg bg-background hover:bg-accent/5 border border-border transition-colors text-left disabled:opacity-50 group"
                   >
-                    {cred.label}
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{cred.label}</p>
+                      <p className="text-xs text-muted-foreground">{cred.email}</p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-accent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div className="flex items-center gap-3 mb-5">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-xs text-muted-foreground font-medium">or enter credentials</span>
+              <div className="flex-1 h-px bg-border" />
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -106,7 +167,7 @@ export default function Login() {
                   required
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  placeholder={tab === "admin" ? "admin@baumtenpers.com" : "student@university.edu"}
+                  placeholder={tab === "admin" ? "admin@baumtenpers.com" : "your@email.com"}
                   className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring transition"
                 />
               </div>
@@ -133,34 +194,39 @@ export default function Login() {
 
               {error && (
                 <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/30 rounded-xl text-sm text-destructive">
-                  {error}
+                  ⚠ {error}
                 </div>
               )}
 
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full py-3 rounded-xl text-sm font-bold transition-all disabled:opacity-50 ${
+                className={`w-full py-3 rounded-xl text-sm font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2 ${
                   tab === "admin"
                     ? "bg-accent text-accent-foreground hover:opacity-90"
                     : "bg-primary text-primary-foreground hover:opacity-90"
                 }`}
               >
-                {loading ? "Signing in..." : `Sign in as ${tab === "admin" ? "Administrator" : "Student"}`}
+                {loading
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Signing in...</>
+                  : `Sign in as ${tab === "admin" ? "Administrator" : "Student"}`
+                }
               </button>
             </form>
 
-            <div className="mt-6 pt-5 border-t border-border text-center">
-              <p className="text-xs text-muted-foreground">
-                New student?{" "}
-                <button
-                  onClick={() => navigate("/onboarding")}
-                  className="text-accent hover:underline font-medium"
-                >
-                  Register here
-                </button>
-              </p>
-            </div>
+            {tab === "student" && (
+              <div className="mt-6 pt-5 border-t border-border text-center">
+                <p className="text-xs text-muted-foreground">
+                  New student?{" "}
+                  <button
+                    onClick={goToOnboarding}
+                    className="text-accent hover:underline font-medium"
+                  >
+                    Register here
+                  </button>
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
