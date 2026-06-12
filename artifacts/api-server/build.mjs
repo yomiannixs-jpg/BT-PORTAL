@@ -23,5 +23,5 @@ await build({
     'pino-pretty',
     'thread-stream',
     'zod'
-  ],
+  ]
 });
