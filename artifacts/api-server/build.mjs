@@ -6,7 +6,7 @@ await build({
   platform: 'node',
   target: 'node20',
   format: 'esm',
-  outfile: 'dist/index.js',
+  outfile: 'dist/index.mjs',
   packages: 'external',
   sourcemap: false,
   external: [
