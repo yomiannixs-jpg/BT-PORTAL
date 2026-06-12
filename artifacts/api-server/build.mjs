@@ -24,4 +24,8 @@ await build({
     'thread-stream',
     'zod'
   ]
+<<<<<<< HEAD
 });
+=======
+});
+>>>>>>> d6cfddf (Remove pino plugin from api build)
