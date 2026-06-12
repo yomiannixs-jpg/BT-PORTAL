@@ -5,8 +5,8 @@ await build({
   bundle: true,
   platform: 'node',
   target: 'node20',
-  format: 'esm',
-  outfile: 'dist/index.mjs',
+  format: 'cjs',
+  outfile: 'dist/index.cjs',
   packages: 'bundle',
   sourcemap: false
 });
