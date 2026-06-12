@@ -8,19 +8,5 @@ await build({
   format: 'esm',
   outfile: 'dist/index.mjs',
   packages: 'bundle',
-  sourcemap: false,
-  external: [
-    'bcryptjs',
-    'cookie-parser',
-    'cors',
-    'drizzle-orm',
-    'drizzle-orm/*',
-    'express',
-    'jsonwebtoken',
-    'pg',
-    'pino',
-    'pino-http',
-    'pino-pretty',
-    'thread-stream',
-  ]
+  sourcemap: false
 });
