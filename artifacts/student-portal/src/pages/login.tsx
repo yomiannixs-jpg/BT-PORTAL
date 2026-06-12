@@ -6,6 +6,8 @@ type Tab = "student" | "admin";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
+const showDemoAccess = import.meta.env.VITE_SHOW_DEMO_ACCESS === "true";
+
 const demoCredentials = {
   student: [
     { label: "Amara Mensah", email: "amara.mensah@example.com", password: "student1" },
@@ -130,12 +132,13 @@ export default function Login() {
           </div>
 
           <div className="p-8">
-            {/* One-click demo access */}
-            <div className="mb-6 p-4 bg-muted/40 rounded-xl border border-border">
-              <p className="text-xs font-bold text-foreground/70 uppercase tracking-wide mb-3">
-                ⚡ One-click demo access
-              </p>
-              <div className="flex flex-col gap-2">
+            {/* One-click demo access: disabled unless VITE_SHOW_DEMO_ACCESS=true */}
+            {showDemoAccess && (
+              <div className="mb-6 p-4 bg-muted/40 rounded-xl border border-border">
+                <p className="text-xs font-bold text-foreground/70 uppercase tracking-wide mb-3">
+                  Demo access
+                </p>
+                <div className="flex flex-col gap-2">
                 {demoCredentials[tab].map(cred => (
                   <button
                     key={cred.email}
@@ -150,8 +153,9 @@ export default function Login() {
                     <ArrowRight className="w-4 h-4 text-accent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
                 ))}
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="flex items-center gap-3 mb-5">
               <div className="flex-1 h-px bg-border" />

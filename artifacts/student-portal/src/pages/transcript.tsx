@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { useStudent } from "@/lib/student-context";
 import { useAuth } from "@/lib/auth-context";
+import { apiPath } from "@/lib/api";
 import {
   Award, Download, Printer, FileText, Lock, Clock, CheckCircle2,
   XCircle, AlertCircle, Loader2, RefreshCw,
 } from "lucide-react";
 
-const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const gradePoints: Record<string, number> = {
   "A+": 4.0, "A": 4.0, "A-": 3.7,
@@ -64,7 +64,7 @@ export default function Transcript() {
     setCheckingStatus(true);
     setError("");
     try {
-      const res = await fetch(`${BASE}/api/students/${studentId}/transcript/status`, { headers: authHeaders });
+      const res = await fetch(apiPath(`/api/students/${studentId}/transcript/status`), { headers: authHeaders });
       if (res.ok) {
         const data = await res.json();
         setReqStatus(data);
@@ -83,7 +83,7 @@ export default function Transcript() {
   const fetchTranscript = async () => {
     setLoadingTranscript(true);
     try {
-      const res = await fetch(`${BASE}/api/students/${studentId}/transcript`, { headers: authHeaders });
+      const res = await fetch(apiPath(`/api/students/${studentId}/transcript`), { headers: authHeaders });
       if (res.ok) {
         setTranscriptData(await res.json());
       }
@@ -98,7 +98,7 @@ export default function Transcript() {
     setSubmitting(true);
     setError("");
     try {
-      const res = await fetch(`${BASE}/api/students/${studentId}/transcript`, {
+      const res = await fetch(apiPath(`/api/students/${studentId}/transcript`), {
         method: "POST",
         headers: { "Content-Type": "application/json", ...authHeaders },
         body: JSON.stringify({ purpose: selectedPurpose }),

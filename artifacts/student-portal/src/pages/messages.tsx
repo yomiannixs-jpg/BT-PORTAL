@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useStudent } from "@/lib/student-context";
 import { useAuth } from "@/lib/auth-context";
 import { MessageSquare, Send, Reply, CheckCheck, Circle, Plus } from "lucide-react";
+import { apiPath } from "@/lib/api";
 
-const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 interface Message {
   id: number;
@@ -37,8 +37,8 @@ export default function Messages() {
     setLoading(true);
     try {
       const url = isAdmin
-        ? `${BASE}/api/messages`
-        : `${BASE}/api/students/${studentId}/messages`;
+        ? apiPath("/api/messages")
+        : apiPath(`/api/students/${studentId}/messages`);
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -60,7 +60,7 @@ export default function Messages() {
     setSending(true);
     try {
       const targetStudentId = isAdmin && replyTo ? replyTo.studentId : studentId;
-      const res = await fetch(`${BASE}/api/students/${targetStudentId}/messages`, {
+      const res = await fetch(apiPath(`/api/students/${targetStudentId}/messages`), {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -82,7 +82,7 @@ export default function Messages() {
   };
 
   const markRead = async (id: number) => {
-    await fetch(`${BASE}/api/messages/${id}/read`, {
+    await fetch(apiPath(`/api/messages/${id}/read`), {
       method: "PATCH",
       headers: { Authorization: `Bearer ${token}` },
     });

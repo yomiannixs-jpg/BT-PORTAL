@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { apiPath } from "@/lib/api";
 import {
   useListStudents,
   useListCourses,
@@ -24,7 +25,6 @@ import {
 } from "lucide-react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
-const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 type Tab = "stats" | "students" | "courses" | "announcements" | "transcripts" | "grades" | "messages";
 
@@ -137,7 +137,7 @@ export default function Admin() {
   const fetchTranscripts = async () => {
     setTranscriptsLoading(true);
     try {
-      const res = await fetch(`${BASE}/api/transcripts`, { headers: authH });
+      const res = await fetch(apiPath("/api/transcripts"), { headers: authH });
       if (res.ok) setTranscripts(await res.json());
     } finally {
       setTranscriptsLoading(false);
@@ -147,7 +147,7 @@ export default function Admin() {
   const fetchSubmissions = async () => {
     setSubmissionsLoading(true);
     try {
-      const res = await fetch(`${BASE}/api/admin/submissions`, { headers: authH });
+      const res = await fetch(apiPath("/api/admin/submissions"), { headers: authH });
       if (res.ok) setSubmissions(await res.json());
     } finally {
       setSubmissionsLoading(false);
@@ -157,7 +157,7 @@ export default function Admin() {
   const fetchMessages = async () => {
     setMessagesLoading(true);
     try {
-      const res = await fetch(`${BASE}/api/messages`, { headers: authH });
+      const res = await fetch(apiPath("/api/messages"), { headers: authH });
       if (res.ok) {
         const data = await res.json();
         setAllMessages(data);
@@ -203,7 +203,7 @@ export default function Admin() {
   const handleTranscriptAction = async (id: number, action: "approve" | "deny") => {
     setActioningId(id);
     try {
-      await fetch(`${BASE}/api/transcripts/${id}`, {
+      await fetch(apiPath(`/api/transcripts/${id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...authH },
         body: JSON.stringify({
@@ -223,7 +223,7 @@ export default function Admin() {
     if (!form?.score || !form?.letterGrade) return;
     setSavingGrade(true);
     try {
-      const res = await fetch(`${BASE}/api/submissions/${submissionId}/grade`, {
+      const res = await fetch(apiPath(`/api/submissions/${submissionId}/grade`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...authH },
         body: JSON.stringify({
@@ -258,7 +258,7 @@ export default function Admin() {
     if (!selectedMsg || !replyBody.trim()) return;
     setSendingReply(true);
     try {
-      const res = await fetch(`${BASE}/api/students/${selectedMsg.studentId}/messages`, {
+      const res = await fetch(apiPath(`/api/students/${selectedMsg.studentId}/messages`), {
         method: "POST",
         headers: { "Content-Type": "application/json", ...authH },
         body: JSON.stringify({

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { apiPath } from "@/lib/api";
 
 export interface AuthUser {
   id: number;
@@ -24,7 +25,6 @@ const AuthContext = createContext<AuthContextValue>({
   isLoading: true,
 });
 
-const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const res = await fetch(`${BASE}/api/auth/login`, {
+      const res = await fetch(apiPath("/api/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

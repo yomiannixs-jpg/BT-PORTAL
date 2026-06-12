@@ -13,7 +13,7 @@ const StudentContext = createContext<StudentContextValue>({
 export function StudentProvider({ children }: { children: ReactNode }) {
   const [studentId, setStudentIdState] = useState<number | null>(() => {
     const stored = localStorage.getItem("studentId");
-    return stored ? Number(stored) : 1;
+    return stored ? Number(stored) : null;
   });
 
   const setStudentId = (id: number | null) => {

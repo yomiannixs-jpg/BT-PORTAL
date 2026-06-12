@@ -124,8 +124,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Footer */}
         <div className="px-6 py-3 border-t border-sidebar-border">
-          <div className="text-xs text-sidebar-foreground/40">Powered by</div>
-          <div className="text-xs font-semibold text-sidebar-foreground/60 mt-0.5">Premiere Research Academy</div>
+          <div className="text-xs font-semibold text-sidebar-foreground/60">Premiere Research Academy</div>
+          <div className="text-xs text-sidebar-foreground/40 mt-0.5">BAUM TenPers Institute</div>
         </div>
       </aside>
 
