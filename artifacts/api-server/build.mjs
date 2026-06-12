@@ -1,15 +1,14 @@
 import { build } from 'esbuild';
-import pinoPlugin from 'esbuild-plugin-pino';
 
 await build({
   entryPoints: ['src/index.ts'],
-  outfile: 'dist/index.mjs',
   bundle: true,
   platform: 'node',
+  target: 'node20',
   format: 'esm',
-  target: ['node20'],
-  sourcemap: true,
-  plugins: [pinoPlugin({ transports: ['pino-pretty'] })],
+  outfile: 'dist/index.js',
+  packages: 'external',
+  sourcemap: false,
   external: [
     'bcryptjs',
     'cookie-parser',
