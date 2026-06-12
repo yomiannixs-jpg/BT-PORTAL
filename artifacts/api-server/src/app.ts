@@ -25,7 +25,7 @@ app.use(
     },
   }),
 );
-const allowedOrigins = (process.env.CORS_ORIGIN ?? "")
+const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? process.env.CORS_ORIGIN ?? "")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
