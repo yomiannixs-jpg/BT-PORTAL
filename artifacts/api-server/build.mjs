@@ -7,7 +7,7 @@ await build({
   target: 'node20',
   format: 'esm',
   outfile: 'dist/index.mjs',
-  packages: 'external',
+  packages: 'bundle',
   sourcemap: false,
   external: [
     'bcryptjs',
