@@ -1,6 +1,0 @@
-{
-  "installCommand": "corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm install --frozen-lockfile=false --filter @workspace/student-portal...",
-  "buildCommand": "corepack enable && corepack prepare pnpm@9.15.4 --activate && pnpm --filter @workspace/student-portal build",
-  "outputDirectory": "artifacts/student-portal/dist",
-  "framework": "vite"
-}
